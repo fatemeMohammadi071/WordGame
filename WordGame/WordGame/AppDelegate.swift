@@ -15,7 +15,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
                 
         window = UIWindow(frame: UIScreen.main.bounds)
-        let rootViewController = WordGameViewController()
+        // TODO: Remove to container
+        let viewModel = WordGameViewModel(wordGameRepo: FileManagerHandler())
+        let rootViewController = WordGameViewController(viewModel: viewModel)
         window?.rootViewController = rootViewController
         window?.makeKeyAndVisible()
     
