@@ -6,18 +6,51 @@
 //
 
 import Foundation
+import Combine
 
 struct RandomWordsModel {
     let correctAnswers: [Word]
     let restOfWords: [Word]
 }
 
-protocol WordGameViewModelProtocol {}
+protocol WordGameViewModelDelegate {
+    
+}
+
+protocol WordGameViewModelProtocol {
+    // input
+    func startGame()
+    func reset()
+    func checkAnswerWith(_ isCorrect: Bool)
+    
+    // output
+    var nextWord$: AnyPublisher<Word, Never> { get }
+    var gameOver$: AnyPublisher<Void, Never> { get }
+    var wrongAttemptsCounter$: AnyPublisher<Int, Never> { get }
+    var correctAttemptsCounter$: AnyPublisher<Int, Never> { get }
+}
 
 class WordGameViewModel: WordGameViewModelProtocol {
     
     let wordGameRepo: FileManagerHandlerProtocol
     let fileName: String = "words"
+
+    var allWords: [Word] = []
+    var words: [Word] = []
+    var currentWord: Word?
+    var wordIndex: Int = 0
+    var wrongAnswers: Int = 0
+    var correctAnswers: Int = 0
+    
+    var nextWord$: AnyPublisher<Word, Never> { nextWordSubject.guaranteeMainThread() }
+    var gameOver$: AnyPublisher<Void, Never> { gameOverSubject.guaranteeMainThread() }
+    var wrongAttemptsCounter$: AnyPublisher<Int, Never> { $wrongAttemptsCounter.guaranteeMainThread() }
+    var correctAttemptsCounter$: AnyPublisher<Int, Never> { $correctAttemptsCounter.guaranteeMainThread() }
+
+    let nextWordSubject = PassthroughSubject<Word, Never>()
+    let gameOverSubject = PassthroughSubject<Void, Never>()
+    @Published var wrongAttemptsCounter: Int = 0
+    @Published var correctAttemptsCounter: Int = 0
     
     init(wordGameRepo: FileManagerHandlerProtocol) {
         self.wordGameRepo = wordGameRepo
@@ -37,7 +70,9 @@ class WordGameViewModel: WordGameViewModelProtocol {
             switch result {
             case .success(let data):
                 guard let model = self?.parse(data: data) else { return }
-                let data = self?.prepareData(model: model)
+                guard let words = self?.prepareData(model: model) else { return }
+                self?.words = words
+                self?.allWords = words
             case .failure(let error):
                 self?.handelError(error)
             }
@@ -67,7 +102,7 @@ class WordGameViewModel: WordGameViewModelProtocol {
         let restOfWords: [Word] = randomWords.restOfWords
         
         // shuffle rest of data
-        let wrongAnswers = shuffleWords(model: restOfWords)
+        let wrongAnswers = shuffleKeysOfWords(model: restOfWords)
 
         // append 4 correct words
         var wholeWords: [Word] = []
@@ -78,24 +113,23 @@ class WordGameViewModel: WordGameViewModelProtocol {
         return wholeWords.shuffled()
     }
     
-    func generateReplacement(model: [Word], correctWord: Word) -> Word? {
-        guard let random = model.randomElement() else { return nil }
-        var wrongWord: Word = correctWord
-        if random.spanish == correctWord.spanish {
-            generateReplacement(model: model, correctWord: correctWord)
-        } else {
-            wrongWord.spanish = random.spanish
-            return wrongWord
-        }
-        return nil
-    }
-
-    // swap the keys together to generate wrong answer
-    func shuffleWords(model: [Word]) -> [Word] {
+    // swap the words together to generate wrong answer
+    func shuffleKeysOfWords(model: [Word]) -> [Word] {
+        var newDic = model
         var result: [Word] = []
-        for item in model {
-            guard let word = generateReplacement(model: model, correctWord: item) else { return result }
-            result.append(word)
+        var index: Int = 0
+        
+        while index < model.count {
+            var nextIndex = index + 1
+            if nextIndex > model.count + 1 {
+                nextIndex = 0
+            }
+            let newValue = newDic[index].spanish
+            newDic[index].spanish = newDic[nextIndex].spanish
+            newDic[nextIndex].spanish = newValue
+            result.append(newDic[index])
+            result.append(newDic[nextIndex])
+            index += 2
         }
         return result
     }
@@ -120,5 +154,53 @@ class WordGameViewModel: WordGameViewModelProtocol {
             newModel.removeAll { $0 == random }
         }
         return RandomWordsModel(correctAnswers: Array(result), restOfWords: newModel)
+    }
+
+    func checkGameOver() -> Bool {
+        if wrongAnswers >= 3 || words.count == 0 {
+            return true
+        } else {
+            return false
+        }
+    }
+}
+
+extension WordGameViewModel {
+    func startGame() {
+        currentWord = words[wordIndex]
+        guard let currentWord = currentWord else { return }
+        nextWordSubject.send(currentWord)
+        wordIndex += 1
+    }
+
+    func showNextWord() {
+        if checkGameOver() {
+            gameOverSubject.send()
+        } else {
+            currentWord = words[wordIndex]
+            guard let currentWord = currentWord else { return }
+            nextWordSubject.send(currentWord)
+            wordIndex += 1
+        }
+    }
+
+    func checkAnswerWith(_ isCorrect: Bool) {
+        let correctoWord = allWords.filter { $0.english == currentWord?.english }.first
+        if (isCorrect && correctoWord?.spanish != currentWord?.spanish) || (!isCorrect && correctoWord?.spanish == currentWord?.spanish) {
+            wrongAnswers += 1
+            wrongAttemptsCounter = wrongAnswers
+        } else {
+            correctAnswers += 1
+            correctAttemptsCounter = correctAnswers
+        }
+        words.removeAll { $0 == currentWord }
+        showNextWord()
+    }
+
+    func reset() {
+        wrongAnswers = 0
+        words = allWords
+        wordIndex = 0
+        wrongAnswers = 0
     }
 }

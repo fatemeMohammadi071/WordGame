@@ -6,10 +6,27 @@
 //
 
 import UIKit
+import Combine
 
 class WordGameViewController: UIViewController {
 
+    @IBOutlet weak var englishWordLabel: UILabel!
+    @IBOutlet weak var spanishWordLabel: UILabel!
+    @IBOutlet weak var wrongAttemptsLabel: UILabel!
+    @IBOutlet weak var correctAttemptsLabel: UILabel!
+    @IBOutlet weak var correctBtn: UIButton!
+    @IBOutlet weak var wrongBtn: UIButton!
+
+    @IBAction func correct(_ sender: Any) {
+        viewModel.checkAnswerWith(true)
+    }
+
+    @IBAction func wrong(_ sender: Any) {
+        viewModel.checkAnswerWith(false)
+    }
+
     var viewModel: WordGameViewModel!
+    private var store = Set<AnyCancellable>()
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
@@ -25,8 +42,38 @@ class WordGameViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+        bindViewModelToView()
+        viewModel.startGame()
+        
     }
 
+    private func bindViewModelToView() {
+        viewModel.nextWord$
+            .sink { [unowned self] word in
+                updateWords(word: word)
+            }.store(in: &store)
+        
+        viewModel.correctAttemptsCounter$
+            .sink { [unowned self] counter in
+                updateCorrectAttempts(counter)
+            }.store(in: &store)
+        
+        viewModel.wrongAttemptsCounter$
+            .sink { [unowned self] counter in
+                updateWrongAttempts(counter)
+            }.store(in: &store)
+    }
+    
+    private func updateWords(word: Word) {
+        englishWordLabel.text = word.english
+        spanishWordLabel.text = word.spanish
+    }
+
+    private func updateCorrectAttempts(_ counter: Int) {
+        correctAttemptsLabel.text = "Correct Attepmts: \(counter)"
+    }
+    
+    private func updateWrongAttempts(_ counter: Int) {
+        wrongAttemptsLabel.text = "Wrong Attepmts: \(counter)"
+    }
 }

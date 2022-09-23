@@ -47,3 +47,16 @@ class FileManagerHandler: FileManagerHandlerProtocol {
         }
     }
 }
+
+// step 1 : write in file system
+/// appending path (check before dose not exist)
+
+
+// step 3: update UI
+/// show pairs using animate
+/// check the correct answer
+/// update counters
+/// check the conditions of quit the game every time
+/// show quit alert
+
+// step 4: write test
