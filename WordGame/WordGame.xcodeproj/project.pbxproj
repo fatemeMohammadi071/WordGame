@@ -20,6 +20,7 @@
 		8342BFD828DDCF0C000C5621 /* Word.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8342BFD728DDCF0C000C5621 /* Word.swift */; };
 		8342BFDA28DDCF1E000C5621 /* WordGameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8342BFD928DDCF1E000C5621 /* WordGameViewController.swift */; };
 		8342BFDC28DDCF29000C5621 /* WordGameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8342BFDB28DDCF29000C5621 /* WordGameViewModel.swift */; };
+		8342BFE128DDE514000C5621 /* words.json in Resources */ = {isa = PBXBuildFile; fileRef = 8342BFE028DDE514000C5621 /* words.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +58,7 @@
 		8342BFD728DDCF0C000C5621 /* Word.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Word.swift; sourceTree = "<group>"; };
 		8342BFD928DDCF1E000C5621 /* WordGameViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WordGameViewController.swift; sourceTree = "<group>"; };
 		8342BFDB28DDCF29000C5621 /* WordGameViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WordGameViewModel.swift; sourceTree = "<group>"; };
+		8342BFE028DDE514000C5621 /* words.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = words.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -146,6 +148,7 @@
 		8342BFDD28DDD1C8000C5621 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				8342BFE028DDE514000C5621 /* words.json */,
 				8342BFA528DDCA57000C5621 /* Assets.xcassets */,
 				8342BFA728DDCA57000C5621 /* LaunchScreen.storyboard */,
 			);
@@ -276,6 +279,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8342BFA928DDCA57000C5621 /* LaunchScreen.storyboard in Resources */,
+				8342BFE128DDE514000C5621 /* words.json in Resources */,
 				8342BFCF28DDCA87000C5621 /* WordGameViewController.xib in Resources */,
 				8342BFA628DDCA57000C5621 /* Assets.xcassets in Resources */,
 			);

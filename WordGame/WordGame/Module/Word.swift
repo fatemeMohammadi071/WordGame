@@ -7,9 +7,9 @@
 
 import Foundation
 
-struct Word: Codable, Equatable {
+struct Word: Codable, Hashable {
     let english: String
-    let spanish: String
+    var spanish: String
 
     enum CodingKeys: String, CodingKey {
         case english = "text_eng"
