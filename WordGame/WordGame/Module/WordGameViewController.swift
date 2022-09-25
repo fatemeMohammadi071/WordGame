@@ -62,6 +62,13 @@ class WordGameViewController: UIViewController {
             .sink { [unowned self] counter in
                 updateWrongAttempts(counter)
             }.store(in: &store)
+
+        viewModel.gameOver$
+            .sink { [unowned self] in
+                self.showAlert(title: "Game Over", message: "do you want to play again?") {
+                    self.viewModel.reset()
+                }
+            }.store(in: &store)
     }
     
     private func updateWords(word: Word) {
@@ -75,5 +82,19 @@ class WordGameViewController: UIViewController {
     
     private func updateWrongAttempts(_ counter: Int) {
         wrongAttemptsLabel.text = "Wrong Attepmts: \(counter)"
+    }
+}
+
+
+extension WordGameViewController {
+    func showAlert(title: String, message: String, completion: (() -> Void)?) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "Yes", style: .default, handler: { _ in
+            completion?()
+        }))
+        alertController.addAction(UIAlertAction(title: "No", style: .cancel, handler: { _ in
+            exit(0)
+        }))
+        present(alertController, animated: true, completion: nil)
     }
 }
