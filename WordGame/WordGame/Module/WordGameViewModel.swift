@@ -35,7 +35,7 @@ class WordGameViewModel: WordGameViewModelProtocol {
     let wordGameRepo: FileManagerHandlerProtocol
     let fileName: String = "words"
 
-    var allWords: [Word] = []
+    var correctWords: [Word] = []
     var words: [Word] = []
     var currentWord: Word?
     var wordIndex: Int = 0
@@ -72,7 +72,6 @@ class WordGameViewModel: WordGameViewModelProtocol {
                 guard let model = self?.parse(data: data) else { return }
                 guard let words = self?.prepareData(model: model) else { return }
                 self?.words = words
-                self?.allWords = words
             case .failure(let error):
                 self?.handelError(error)
             }
@@ -95,6 +94,7 @@ class WordGameViewModel: WordGameViewModelProtocol {
     func prepareData(model: [Word]) -> [Word] {
         // generate 15 correct words
         let words = generateRandomElements(model: model, count: 15)
+        correctWords = words
         
         // removed 4 correct words randomly
         guard let randomWords = generateRandomWordsWithRest(model: words, count: 3) else { return [] }
@@ -157,7 +157,7 @@ class WordGameViewModel: WordGameViewModelProtocol {
     }
 
     func checkGameOver() -> Bool {
-        if wrongAnswers >= 3 || words.count == 0 {
+        if wrongAnswers >= 3 || wordIndex > 14 {
             return true
         } else {
             return false
@@ -170,6 +170,8 @@ extension WordGameViewModel {
         currentWord = words[wordIndex]
         guard let currentWord = currentWord else { return }
         nextWordSubject.send(currentWord)
+        wrongAttemptsCounter = 0
+        correctAttemptsCounter = 0
         wordIndex += 1
     }
 
@@ -185,7 +187,7 @@ extension WordGameViewModel {
     }
 
     func checkAnswerWith(_ isCorrect: Bool) {
-        let correctoWord = allWords.filter { $0.english == currentWord?.english }.first
+        let correctoWord = correctWords.filter { $0.english == currentWord?.english }.first
         if (isCorrect && correctoWord?.spanish != currentWord?.spanish) || (!isCorrect && correctoWord?.spanish == currentWord?.spanish) {
             wrongAnswers += 1
             wrongAttemptsCounter = wrongAnswers
@@ -193,14 +195,14 @@ extension WordGameViewModel {
             correctAnswers += 1
             correctAttemptsCounter = correctAnswers
         }
-        words.removeAll { $0 == currentWord }
         showNextWord()
     }
 
     func reset() {
         wrongAnswers = 0
-        words = allWords
+        correctAnswers = 0
         wordIndex = 0
-        wrongAnswers = 0
+        fetchData()
+        startGame()
     }
 }
